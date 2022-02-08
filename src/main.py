@@ -1,4 +1,4 @@
-from diagnostics_exper_system import runex
+from diagnostics_expert_system import runex
 
 def expert_system():
     runex()
