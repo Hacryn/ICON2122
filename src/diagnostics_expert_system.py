@@ -15,8 +15,7 @@ def askquestion(question: str) -> bool:
 
 def isanswer(answer: str) -> bool:
     answer = answer.lower()
-    if answer == "y" or answer == "n": return True
-    else: return False
+    return answer == "y" or answer == "n"
 
 class DiagnosticsES(KnowledgeEngine):
 
