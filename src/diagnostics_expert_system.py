@@ -26,7 +26,6 @@ class DiagnosticsES(KnowledgeEngine):
     @DefFacts()
     def _initial_action(self):
         yield Fact(question=True)
-        yield Fact(malattia=False)
 
     # SINTOMI DI BASE
 
