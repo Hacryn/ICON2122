@@ -1,10 +1,13 @@
 import bnlearn
 from pgmpy.factors.discrete import TabularCPD
+from dataset_gen import load_dataset
 
 def runbn():
     bn = DiagnosticsBN()
     #bn.plotDAG()
     #bn.plotCPD()
+    bn.testMalattia()
+    bn.dag_from_dataset(load_dataset("data/dataset.csv"))
     bn.testMalattia()
 
 class DiagnosticsBN:
@@ -65,8 +68,8 @@ class DiagnosticsBN:
                                     evidence_card=[2,2])
         self.DoloreCPT = TabularCPD(variable='Dolore addominale',
                                     variable_card=2,
-                                    values=[[0.80, 0, 0.80, 0],
-                                            [0.20, 1, 0.20, 1]],
+                                    values=[[0.80, 0, 0.70, 0],
+                                            [0.20, 1, 0.30, 1]],
                                     evidence=['Ciste', 'Ulcera'],
                                     evidence_card=[2,2])
         self.AcidoCPT = TabularCPD(variable='Acidità di stomaco',
@@ -89,10 +92,15 @@ class DiagnosticsBN:
         ])
 
 
+    def dag_from_dataset(self, dataset):
+        self.DAG = bnlearn.parameter_learning.fit(self.DAG, dataset, methodtype="maximumlikelihood", verbose=0)
+        print("=Ricavato=====================================================================================")
+        bnlearn.print_CPD(self.DAG)
+
     def plotDAG(self): bnlearn.plot(self.DAG)
 
     def plotCPD(self): bnlearn.print_CPD(self.DAG)
 
     def testMalattia(self):
-        q = bnlearn.inference.fit(self.DAG, variables=['Malattia'], evidence={'Vomito': 1})
+        q = bnlearn.inference.fit(self.DAG, variables=['Malattia'], evidence={'Ciste': 1})
         print(q)
