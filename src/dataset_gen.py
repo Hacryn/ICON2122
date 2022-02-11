@@ -16,7 +16,7 @@ def gen_data(size: int):
     ulcera = []
 
     for i in range(0, size):
-        m = random_binary(5)
+        m = random_binary(1)
         c = random_binary_mono(10, 500, m)
         n = random_binary_bin(250, 300, 500, 1000, m, c)
         u = random_binary_bin(5, 5, 300, 0, m, c)

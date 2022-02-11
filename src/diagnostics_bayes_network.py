@@ -1,13 +1,29 @@
 import bnlearn
 from pgmpy.factors.discrete import TabularCPD
 from dataset_gen import load_dataset
+from diagnostics_expert_system import askquestion
 
-def runbn():
+def runbn(mode: str = "normal", dataset = "data/dataset.csv"):
+    evidences = {
+        'Nausea': int(askquestion("Hai la nausea?")),
+        'Vomito': int(askquestion("Soffri di vomito?")),
+        'Perdita di peso': int(askquestion("Hai subito una perdita di peso inaspettata?")),
+        'Diarrea': int(askquestion("Soffri di diarrea?")),
+        'Dolore addominale': int(askquestion("Soffri di dolore addominale?")),
+        'Rigonfiamento': int(askquestion("Hai un rigonfiamento nella zona addominale?")),
+        'Acidità di stomaco': int(askquestion("Soffri di acidità di stomaco?"))
+    }
+    bayes_network = DiagnosticsBN()
+    if mode == "learn": bayes_network.learn_from_dataset(load_dataset(dataset))
+    result = bayes_network.inference(evidences)
+    print(result)
+
+def testrun():
     bn = DiagnosticsBN()
-    #bn.plotDAG()
-    #bn.plotCPD()
+    # bn.plotDAG()
+    # bn.plotCPD()
     bn.testMalattia()
-    bn.dag_from_dataset(load_dataset("data/dataset.csv"))
+    bn.learn_from_dataset(load_dataset("data/dataset.csv"))
     bn.testMalattia()
 
 class DiagnosticsBN:
@@ -22,6 +38,7 @@ class DiagnosticsBN:
                  ('Ciste', 'Nausea'),
                  ('Ciste', 'Dolore addominale'),
                  ('Ciste', 'Ulcera'),
+                 ('Ciste', 'Rigonfiamento'),
                  ('Ulcera', 'Dolore addominale'),
                  ('Ulcera', 'Acidità di stomaco'),
                  ('Nausea', 'Vomito')]
@@ -72,6 +89,12 @@ class DiagnosticsBN:
                                             [0.20, 1, 0.30, 1]],
                                     evidence=['Ciste', 'Ulcera'],
                                     evidence_card=[2,2])
+        self.RigonfiamentoCPT = TabularCPD(variable="Rigonfiamento",
+                                           variable_card=2,
+                                           values=[[0.90, 0.50],
+                                                  [0.10, 0.50]],
+                                           evidence=['Ciste'],
+                                            evidence_card = [2])
         self.AcidoCPT = TabularCPD(variable='Acidità di stomaco',
                                    variable_card=2,
                                    values=[[0.70, 0],
@@ -88,12 +111,13 @@ class DiagnosticsBN:
             self.VomitoCPT,
             self.UlceraCPT,
             self.DoloreCPT,
+            self.RigonfiamentoCPT,
             self.AcidoCPT
-        ])
+        ], verbose=0)
 
 
-    def dag_from_dataset(self, dataset):
-        self.DAG = bnlearn.parameter_learning.fit(self.DAG, dataset, methodtype="maximumlikelihood", verbose=0)
+    def learn_from_dataset(self, dataset):
+        self.DAG = bnlearn.parameter_learning.fit(bnlearn.make_DAG(self.Edges), dataset, methodtype="maximumlikelihood", verbose=0)
         print("=Ricavato=====================================================================================")
         bnlearn.print_CPD(self.DAG)
 
@@ -104,3 +128,5 @@ class DiagnosticsBN:
     def testMalattia(self):
         q = bnlearn.inference.fit(self.DAG, variables=['Malattia'], evidence={'Ciste': 1})
         print(q)
+
+    def inference(self, evidences): return bnlearn.inference.fit(self.DAG, variables=['Malattia'], evidence=evidences, verbose=0)
