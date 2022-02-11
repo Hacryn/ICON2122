@@ -45,8 +45,8 @@ class DiagnosticsBN:
         # Assign CPT (Conditional Probabilities Table) for every node in the DAG
         self.MalattiaCPT = TabularCPD(variable='Malattia',
                                       variable_card=2,
-                                      values=[[0.99],
-                                              [0.01]])
+                                      values=[[0.97],
+                                              [0.03]])
         self.DiarreaCPT = TabularCPD(variable='Diarrea',
                                      variable_card=2,
                                      values=[[0.70, 0.30],
@@ -118,7 +118,6 @@ class DiagnosticsBN:
 
     def learn_from_dataset(self, dataset):
         self.DAG = bnlearn.parameter_learning.fit(bnlearn.make_DAG(self.Edges), dataset, methodtype="maximumlikelihood", verbose=0)
-        print("=Ricavato=====================================================================================")
         bnlearn.print_CPD(self.DAG)
 
     def plotDAG(self): bnlearn.plot(self.DAG)

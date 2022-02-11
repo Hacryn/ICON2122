@@ -2,7 +2,7 @@ import pandas
 import numpy
 
 def gen_data(size: int):
-    columns = [ "Perdita di peso", "Diarrea", "Nausea", "Vomito", "Acidità di stomaco", "Dolore addominale", "Ciste", "Ulcera", "Malattia" ]
+    columns = [ "Perdita di peso", "Diarrea", "Nausea", "Vomito", "Rigonfiamento", "Acidità di stomaco", "Dolore addominale", "Ciste", "Ulcera", "Malattia" ]
     dataset = pandas.DataFrame(columns=columns, dtype=int)
 
     malattia = []
@@ -10,13 +10,14 @@ def gen_data(size: int):
     diarrea = []
     nausea = []
     vomito = []
+    rigonfiamento = []
     ads = []
     da = []
     ciste = []
     ulcera = []
 
     for i in range(0, size):
-        m = random_binary(1)
+        m = random_binary(3)
         c = random_binary_mono(10, 500, m)
         n = random_binary_bin(250, 300, 500, 1000, m, c)
         u = random_binary_bin(5, 5, 300, 0, m, c)
@@ -25,6 +26,7 @@ def gen_data(size: int):
         diarrea.append(int(random_binary_mono(300, 700, m)))
         nausea.append(int(n))
         vomito.append(int(random_binary_mono(150, 600, n)))
+        rigonfiamento.append(int(random_binary_mono(100, 500, c)))
         ads.append(int(random_binary_mono(300, 1000, u)))
         da.append(int(random_binary_bin(200, 1000, 300, 1000, c, u)))
         ciste.append(int(c))
@@ -34,6 +36,7 @@ def gen_data(size: int):
     dataset["Diarrea"] = diarrea
     dataset["Nausea"] = nausea
     dataset["Vomito"] = vomito
+    dataset["Rigonfiamento"] = rigonfiamento
     dataset["Acidità di stomaco"] = ads
     dataset["Dolore addominale"] = da
     dataset["Ciste"] = ciste
