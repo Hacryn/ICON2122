@@ -1,9 +1,12 @@
 import bnlearn
+import pandas
 from pgmpy.factors.discrete import TabularCPD
 from dataset_gen import load_dataset
 from diagnostics_expert_system import askquestion
 
-def runbn(mode: str = "normal", dataset = "data/dataset.csv"):
+DEBUG = False
+
+def runbn(mode: str = "normal", method: str = "ml",dataset = "data/dataset.csv"):
     evidences = {
         'Nausea': int(askquestion("Hai la nausea?")),
         'Vomito': int(askquestion("Soffri di vomito?")),
@@ -13,18 +16,24 @@ def runbn(mode: str = "normal", dataset = "data/dataset.csv"):
         'Rigonfiamento': int(askquestion("Hai un rigonfiamento nella zona addominale?")),
         'Acidità di stomaco': int(askquestion("Soffri di acidità di stomaco?"))
     }
+    if askquestion("Hai effettuato un esame gastrointestinale (come RM/TAC)?"):
+        evidences["Ciste"] = askquestion("L'esame ha rilevato la presenza di una ciste nella zona?")
     bayes_network = DiagnosticsBN()
-    if mode == "learn": bayes_network.learn_from_dataset(load_dataset(dataset))
-    result = bayes_network.inference(evidences)
-    print(result)
+    if mode == "learn": bayes_network.learn_from_dataset(load_dataset(dataset), method)
+    result = get_result(bayes_network.inference(evidences))
+    probability = (result["p"])[1] * 100
+    print("La probabilità di avere la malattia è %.2f" % probability)
+    if probability >= 50: print("Ti conviene contattare il tuo medico")
 
 def testrun():
     bn = DiagnosticsBN()
-    # bn.plotDAG()
-    # bn.plotCPD()
-    bn.testMalattia()
-    bn.learn_from_dataset(load_dataset("data/dataset.csv"))
-    bn.testMalattia()
+    rs = bn.test()
+    df = bnlearn.bnlearn.query2df(rs)
+    pm = df['p']
+    print("La probabilità di avere la malattia è %.2f" % (pm[1] * 100))
+
+def get_result(query) -> pandas.DataFrame:
+    return bnlearn.bnlearn.query2df(query)
 
 class DiagnosticsBN:
 
@@ -115,17 +124,18 @@ class DiagnosticsBN:
             self.AcidoCPT
         ], verbose=0)
 
+    def learn_from_dataset(self, dataset, method):
+        self.DAG = bnlearn.parameter_learning.fit(self.DAG, dataset,
+                                                  methodtype=method,
+                                                  verbose=0)
+        if DEBUG: bnlearn.print_CPD(self.DAG)
 
-    def learn_from_dataset(self, dataset):
-        self.DAG = bnlearn.parameter_learning.fit(bnlearn.make_DAG(self.Edges), dataset, methodtype="maximumlikelihood", verbose=0)
-        bnlearn.print_CPD(self.DAG)
+    def plot_dag(self): bnlearn.plot(self.DAG)
 
-    def plotDAG(self): bnlearn.plot(self.DAG)
+    def plot_cpd(self): bnlearn.print_CPD(self.DAG)
 
-    def plotCPD(self): bnlearn.print_CPD(self.DAG)
+    def test(self): return bnlearn.inference.fit(self.DAG, variables=['Malattia'],
+                                                 evidence={'Ciste': 1}, verbose=0)
 
-    def testMalattia(self):
-        q = bnlearn.inference.fit(self.DAG, variables=['Malattia'], evidence={'Ciste': 1})
-        print(q)
-
-    def inference(self, evidences): return bnlearn.inference.fit(self.DAG, variables=['Malattia'], evidence=evidences, verbose=0)
+    def inference(self, evidences): return bnlearn.inference.fit(self.DAG, variables=['Malattia'],
+                                                                 evidence=evidences, verbose=0)
