@@ -18,7 +18,7 @@ def bayes_network():
         print("Uso del modello preimpostato per la DAG e le probabilità condizionate dei nodi")
         runbn("normal")
 
-def dataset_gen():
+def dataset():
     dataset = load_dataset(path)
     #dataset = gen_data(10000)
     #dataset.to_csv(path)

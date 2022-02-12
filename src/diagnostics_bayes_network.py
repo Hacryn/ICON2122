@@ -125,6 +125,7 @@ class DiagnosticsBN:
         ], verbose=0)
 
     def learn_from_dataset(self, dataset, method):
+        self.DAG = bnlearn.make_DAG(self.Edges)
         self.DAG = bnlearn.parameter_learning.fit(self.DAG, dataset,
                                                   methodtype=method,
                                                   verbose=0)
@@ -136,6 +137,6 @@ class DiagnosticsBN:
 
     def test(self): return bnlearn.inference.fit(self.DAG, variables=['Malattia'],
                                                  evidence={'Ciste': 1}, verbose=0)
-
     def inference(self, evidences): return bnlearn.inference.fit(self.DAG, variables=['Malattia'],
                                                                  evidence=evidences, verbose=0)
+
