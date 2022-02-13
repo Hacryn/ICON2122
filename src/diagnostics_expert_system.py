@@ -49,7 +49,7 @@ class DiagnosticsES(KnowledgeEngine):
         self.declare(Fact(vomito=askquestion("Hai il vomito?")))
 
     # DOLORE ADDOMINALE
-    @Rule(Fact(nausea=True))
+    @Rule(OR(Fact(esame=False), Fact(rigonfiamento=True), Fact(acidita=True), Fact(vomito=False)))
     def ask_doloreaddominale(self):
         self.declare(Fact(doloreAddominale=askquestion("Hai dolore addominale?")))
 
@@ -63,12 +63,12 @@ class DiagnosticsES(KnowledgeEngine):
         self.declare(Fact(esame=askquestion("L'esito dell'esame è positivo?")))
 
     # RIGONFIAMENTO
-    @Rule(Fact(doloreAddominale=True))
+    @Rule(Fact(esame_fatto=False))
     def ask_rigonfiamento(self):
         self.declare(Fact(rigonfiamento=askquestion("Hai un rigonfiamento?")))
 
     # ACIDITA' DI STOMACO
-    @Rule(Fact(doloreAddominale=True))
+    @Rule(OR(Fact(doloreAddominale=True), Fact(rigonfiamento=False)))
     def ask_acidita(self):
         self.declare(Fact(acidita=askquestion("Hai acidità di stomaco?")))
 
@@ -84,11 +84,17 @@ class DiagnosticsES(KnowledgeEngine):
     # CISTI
     @Rule(OR(AND(Fact(doloreAddominale=True), Fact(rigonfiamento=True)), Fact(esame=True)))
     def cisti(self):
+        print("Hai la cisti")
         self.declare(Fact(cisti=True))
 
+    @Rule(Fact(cisti=True))
+    def doloreAddominale(self):
+        self.declare(Fact(doloreAddominale=True))
+
     # ULCERA
-    @Rule(AND(Fact(doloreAddominale=True), Fact(acidita=True), Fact(nausea=True)))
+    @Rule(OR(AND(Fact(doloreAddominale=True), Fact(acidita=True), Fact(nausea=True))))
     def ulcera(self):
+        print("Hai l'ulcera")
         self.declare(Fact(ulcera=True))
 
     # MALATTIA LIEVE
@@ -105,7 +111,9 @@ class DiagnosticsES(KnowledgeEngine):
 
     # ASSENZA DI MALATTIA
     @Rule(OR(Fact(sintomi_base=False), Fact(nausea=False), Fact(doloreAddominale=False),
-          AND(Fact(rigonfiamento=False),Fact(acidita=False))))
+          AND(Fact(rigonfiamento=False), Fact(acidita=False)),
+          AND(Fact(acidita=False), Fact(vomito=False)),
+          AND(Fact(acidita=False), Fact(doloreAddominale=True))))
     def malattia_assente(self):
         print("Con i sintomi indicati non dovresti essere malato.")
         self.reset()
