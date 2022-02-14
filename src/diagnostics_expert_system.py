@@ -31,46 +31,45 @@ class DiagnosticsES(KnowledgeEngine):
 
     @Rule(Fact(question=True))
     def ask_pdp(self):
-        self.declare(Fact(pdp=askquestion("Hai riscontrato perdita di peso?")))
-
+        self.declare(Fact(pdp=askquestion("Hai subito una perdita di peso inaspettata ultimamente?")))
 
     @Rule(Fact(question=True))
     def ask_diarrea(self):
-        self.declare(Fact(diarrea=askquestion("Hai la diarrea?")))
+        self.declare(Fact(diarrea=askquestion("Hai avuto attachi di diarrea nell'ultimo periodo?")))
 
     # NAUSEA
     @Rule(Fact(sintomi_base=True))
     def ask_nausea(self):
-        self.declare(Fact(nausea=askquestion("Hai la nausea?")))
+        self.declare(Fact(nausea=askquestion("Avverti un senso di nausea?")))
 
     # VOMITO
     @Rule(Fact(nausea=True))
     def ask_vomito(self):
-        self.declare(Fact(vomito=askquestion("Hai il vomito?")))
-
-    # DOLORE ADDOMINALE
-    @Rule(OR(Fact(esame=False), Fact(rigonfiamento=True), Fact(acidita=True), Fact(vomito=False)))
-    def ask_doloreaddominale(self):
-        self.declare(Fact(doloreAddominale=askquestion("Hai dolore addominale?")))
+        self.declare(Fact(vomito=askquestion("Hai avuto attacchi di vomito ultimamente?")))
 
     # ESAME
     @Rule(Fact(vomito=True))
     def ask_esame(self):
-        self.declare(Fact(esame_fatto=askquestion("Hai svolto un esame per vedere se hai una ciste?")))
+        self.declare(Fact(esame_fatto=askquestion("Hai svolto un esame per vedere se hai cisti?")))
 
     @Rule(Fact(esame_fatto=True))
     def ask_positivo(self):
         self.declare(Fact(esame=askquestion("L'esito dell'esame è positivo?")))
 
+    # DOLORE ADDOMINALE
+    @Rule(OR(Fact(esame=False), Fact(rigonfiamento=True), Fact(acidita=True), Fact(vomito=False)))
+    def ask_doloreaddominale(self):
+        self.declare(Fact(dolore_addominale=askquestion("Avverti dolore nella zona addominale?")))
+
     # RIGONFIAMENTO
     @Rule(Fact(esame_fatto=False))
     def ask_rigonfiamento(self):
-        self.declare(Fact(rigonfiamento=askquestion("Hai un rigonfiamento?")))
+        self.declare(Fact(rigonfiamento=askquestion("Noti dei rigonfiamenti nella zona addominale?")))
 
     # ACIDITA' DI STOMACO
-    @Rule(OR(Fact(doloreAddominale=True), Fact(rigonfiamento=False)))
+    @Rule(OR(Fact(dolore_addominale=True), Fact(rigonfiamento=False)))
     def ask_acidita(self):
-        self.declare(Fact(acidita=askquestion("Hai acidità di stomaco?")))
+        self.declare(Fact(acidita=askquestion("Stai soffrendo di acidità di stomaco?")))
 
     # SINTOMI DI BASE
     @Rule(OR(Fact(pdp=True), Fact(diarrea=True)))
@@ -82,38 +81,38 @@ class DiagnosticsES(KnowledgeEngine):
         self.declare(Fact(sintomi_base=False))
 
     # CISTI
-    @Rule(OR(AND(Fact(doloreAddominale=True), Fact(rigonfiamento=True)), Fact(esame=True)))
+    @Rule(OR(AND(Fact(dolore_addominale=True), Fact(rigonfiamento=True)), Fact(esame=True)))
     def cisti(self):
-        print("Hai la cisti")
         self.declare(Fact(cisti=True))
 
     @Rule(Fact(cisti=True))
-    def doloreAddominale(self):
-        self.declare(Fact(doloreAddominale=True))
+    def dolore_addominale(self):
+        self.declare(Fact(dolore_addominale=True))
 
     # ULCERA
-    @Rule(OR(AND(Fact(doloreAddominale=True), Fact(acidita=True), Fact(nausea=True))))
+    @Rule(OR(AND(Fact(dolore_addominale=True), Fact(acidita=True), Fact(nausea=True))))
     def ulcera(self):
-        print("Hai l'ulcera")
         self.declare(Fact(ulcera=True))
 
     # MALATTIA LIEVE
     @Rule(AND(Fact(sintomi_base=True), Fact(vomito=True), Fact(cisti=True)))
     def malattia_lieve(self):
-        print("I sintomi indicano che potresti essere malato. Ti consigliamo di recarti da un medico.")
+        print("I sintomi indicano che potresti aver contratto il virus.")
+        print("È consigliabile recarsi da un medico da un medico per ulteriori accertamenti.")
         self.reset()
 
     # MALATTIA GRAVE
     @Rule(AND(Fact(sintomi_base=True), Fact(ulcera=True)))
     def malattia_grave(self):
-        print("I sintomi indicano che potresti essere in uno stadio avanzato della malattia. Recati in ospedale.")
+        print("I sintomi indicano che potresti essere in uno stadio avanzato della malattia causata dal virus.")
+        print("È consiglibile recarsi un una struttura ospedaliera il prima possibile.")
         self.reset()
 
     # ASSENZA DI MALATTIA
-    @Rule(OR(Fact(sintomi_base=False), Fact(nausea=False), Fact(doloreAddominale=False),
+    @Rule(OR(Fact(sintomi_base=False), Fact(nausea=False), Fact(dolore_addominale=False),
           AND(Fact(rigonfiamento=False), Fact(acidita=False)),
           AND(Fact(acidita=False), Fact(vomito=False)),
-          AND(Fact(acidita=False), Fact(doloreAddominale=True))))
+          AND(Fact(acidita=False), Fact(dolore_addominale=True))))
     def malattia_assente(self):
-        print("Con i sintomi indicati non dovresti essere malato.")
+        print("Con i sintomi indicati non dovresti aver contratto il virus.")
         self.reset()
