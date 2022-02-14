@@ -1,7 +1,7 @@
 from diagnostics_expert_system import runex
 from diagnostics_bayes_network import runbn, testrun
 from dataset_gen import gen_data, load_dataset
-from text_interface import ask_question
+from text_interface import ask_question, user_menu, wait_user
 
 path = "data/dataset.csv"
 
@@ -35,6 +35,20 @@ def dataset():
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    bayes_network()
+    title = "Modello da usare"
+    options = [
+        "Sistema esperto",
+        "Rete Bayesiana",
+        "Esci"
+    ]
+    res = 0
+    while res != 3:
+        res = user_menu(title, options)
+        if res == 1:
+            expert_system()
+            wait_user()
+        elif res == 2:
+            bayes_network()
+            wait_user()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
