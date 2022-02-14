@@ -37,6 +37,14 @@ class DiagnosticsES(KnowledgeEngine):
     def ask_diarrea(self):
         self.declare(Fact(diarrea=askquestion("Hai avuto attachi di diarrea nell'ultimo periodo?")))
 
+    @Rule(OR(Fact(pdp=True), Fact(diarrea=True)))
+    def sintomi_base(self):
+        self.declare(Fact(sintomi_base=True))
+
+    @Rule(AND(Fact(pdp=False), Fact(diarrea=False)))
+    def no_sintomi_base(self):
+        self.declare(Fact(sintomi_base=False))
+
     # NAUSEA
     @Rule(Fact(sintomi_base=True))
     def ask_nausea(self):
@@ -56,38 +64,25 @@ class DiagnosticsES(KnowledgeEngine):
     def ask_positivo(self):
         self.declare(Fact(esame=askquestion("L'esito dell'esame è positivo?")))
 
-    # DOLORE ADDOMINALE
-    @Rule(OR(Fact(esame=False), Fact(rigonfiamento=True), Fact(acidita=True), Fact(vomito=False)))
-    def ask_doloreaddominale(self):
-        self.declare(Fact(dolore_addominale=askquestion("Avverti dolore nella zona addominale?")))
-
     # RIGONFIAMENTO
     @Rule(Fact(esame_fatto=False))
     def ask_rigonfiamento(self):
         self.declare(Fact(rigonfiamento=askquestion("Noti dei rigonfiamenti nella zona addominale?")))
 
     # ACIDITA' DI STOMACO
-    @Rule(OR(Fact(dolore_addominale=True), Fact(rigonfiamento=False)))
+    @Rule(OR(Fact(esame=False), Fact(rigonfiamento=False), Fact(vomito=False)))
     def ask_acidita(self):
         self.declare(Fact(acidita=askquestion("Stai soffrendo di acidità di stomaco?")))
 
-    # SINTOMI DI BASE
-    @Rule(OR(Fact(pdp=True), Fact(diarrea=True)))
-    def sintomi_base(self):
-        self.declare(Fact(sintomi_base=True))
-
-    @Rule(AND(Fact(pdp=False), Fact(diarrea=False)))
-    def no_sintomi_base(self):
-        self.declare(Fact(sintomi_base=False))
+    # DOLORE ADDOMINALE
+    @Rule(OR(Fact(rigonfiamento=True), Fact(acidita=True)))
+    def ask_doloreaddominale(self):
+        self.declare(Fact(dolore_addominale=askquestion("Avverti dolore nella zona addominale?")))
 
     # CISTI
     @Rule(OR(AND(Fact(dolore_addominale=True), Fact(rigonfiamento=True)), Fact(esame=True)))
     def cisti(self):
         self.declare(Fact(cisti=True))
-
-    @Rule(Fact(cisti=True))
-    def dolore_addominale(self):
-        self.declare(Fact(dolore_addominale=True))
 
     # ULCERA
     @Rule(OR(AND(Fact(dolore_addominale=True), Fact(acidita=True), Fact(nausea=True))))
