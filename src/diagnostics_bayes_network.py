@@ -2,7 +2,7 @@ import bnlearn
 import pandas
 from pgmpy.factors.discrete import TabularCPD
 from dataset_gen import load_dataset
-from diagnostics_expert_system import ask_question
+from text_interface import ask_question
 
 DEBUG = False
 
