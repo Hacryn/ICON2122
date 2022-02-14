@@ -1,25 +1,10 @@
 from experta import *
-
+from text_interface import ask_question
 
 def runex():
     engine = DiagnosticsES()
     engine.reset()
     engine.run()
-
-
-def askquestion(question: str) -> bool:
-    answer = input(question + " (y/n): ")
-    while not isanswer(answer):
-        answer = input(question + " (y/n): ")
-
-    answer = answer.lower()
-    return answer == "y"
-
-
-def isanswer(answer: str) -> bool:
-    answer = answer.lower()
-    return answer == "y" or answer == "n"
-
 
 class DiagnosticsES(KnowledgeEngine):
 
@@ -31,11 +16,11 @@ class DiagnosticsES(KnowledgeEngine):
 
     @Rule(Fact(question=True))
     def ask_pdp(self):
-        self.declare(Fact(pdp=askquestion("Hai subito una perdita di peso inaspettata ultimamente?")))
+        self.declare(Fact(pdp=ask_question("Hai subito una perdita di peso inaspettata ultimamente?")))
 
     @Rule(Fact(question=True))
     def ask_diarrea(self):
-        self.declare(Fact(diarrea=askquestion("Hai avuto attachi di diarrea nell'ultimo periodo?")))
+        self.declare(Fact(diarrea=ask_question("Hai avuto attachi di diarrea nell'ultimo periodo?")))
 
     @Rule(OR(Fact(pdp=True), Fact(diarrea=True)))
     def sintomi_base(self):
@@ -48,36 +33,36 @@ class DiagnosticsES(KnowledgeEngine):
     # NAUSEA
     @Rule(Fact(sintomi_base=True))
     def ask_nausea(self):
-        self.declare(Fact(nausea=askquestion("Avverti un senso di nausea?")))
+        self.declare(Fact(nausea=ask_question("Avverti un senso di nausea?")))
 
     # VOMITO
     @Rule(Fact(nausea=True))
     def ask_vomito(self):
-        self.declare(Fact(vomito=askquestion("Hai avuto attacchi di vomito ultimamente?")))
+        self.declare(Fact(vomito=ask_question("Hai avuto attacchi di vomito ultimamente?")))
 
     # ESAME
     @Rule(Fact(vomito=True))
     def ask_esame(self):
-        self.declare(Fact(esame_fatto=askquestion("Hai svolto un esame per vedere se hai cisti?")))
+        self.declare(Fact(esame_fatto=ask_question("Hai svolto un esame per vedere se hai cisti?")))
 
     @Rule(Fact(esame_fatto=True))
     def ask_positivo(self):
-        self.declare(Fact(esame=askquestion("L'esito dell'esame è positivo?")))
+        self.declare(Fact(esame=ask_question("L'esito dell'esame è positivo?")))
 
     # RIGONFIAMENTO
     @Rule(Fact(esame_fatto=False))
     def ask_rigonfiamento(self):
-        self.declare(Fact(rigonfiamento=askquestion("Noti dei rigonfiamenti nella zona addominale?")))
+        self.declare(Fact(rigonfiamento=ask_question("Noti dei rigonfiamenti nella zona addominale?")))
 
     # ACIDITA' DI STOMACO
     @Rule(OR(Fact(esame=False), Fact(rigonfiamento=False), Fact(vomito=False)))
     def ask_acidita(self):
-        self.declare(Fact(acidita=askquestion("Stai soffrendo di acidità di stomaco?")))
+        self.declare(Fact(acidita=ask_question("Stai soffrendo di acidità di stomaco?")))
 
     # DOLORE ADDOMINALE
     @Rule(OR(Fact(rigonfiamento=True), Fact(acidita=True)))
     def ask_doloreaddominale(self):
-        self.declare(Fact(dolore_addominale=askquestion("Avverti dolore nella zona addominale?")))
+        self.declare(Fact(dolore_addominale=ask_question("Avverti dolore nella zona addominale?")))
 
     # CISTI
     @Rule(OR(AND(Fact(dolore_addominale=True), Fact(rigonfiamento=True)), Fact(esame=True)))

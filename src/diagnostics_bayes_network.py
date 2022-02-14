@@ -2,22 +2,22 @@ import bnlearn
 import pandas
 from pgmpy.factors.discrete import TabularCPD
 from dataset_gen import load_dataset
-from diagnostics_expert_system import askquestion
+from diagnostics_expert_system import ask_question
 
 DEBUG = False
 
 def runbn(mode: str = "normal", method: str = "ml",dataset = "data/dataset.csv"):
     evidences = {
-        'Nausea': int(askquestion("Hai la nausea?")),
-        'Vomito': int(askquestion("Soffri di vomito?")),
-        'Perdita di peso': int(askquestion("Hai subito una perdita di peso inaspettata?")),
-        'Diarrea': int(askquestion("Soffri di diarrea?")),
-        'Dolore addominale': int(askquestion("Soffri di dolore addominale?")),
-        'Rigonfiamento': int(askquestion("Hai un rigonfiamento nella zona addominale?")),
-        'Acidità di stomaco': int(askquestion("Soffri di acidità di stomaco?"))
+        'Nausea': int(ask_question("Hai la nausea?")),
+        'Vomito': int(ask_question("Soffri di vomito?")),
+        'Perdita di peso': int(ask_question("Hai subito una perdita di peso inaspettata?")),
+        'Diarrea': int(ask_question("Soffri di diarrea?")),
+        'Dolore addominale': int(ask_question("Soffri di dolore addominale?")),
+        'Rigonfiamento': int(ask_question("Hai un rigonfiamento nella zona addominale?")),
+        'Acidità di stomaco': int(ask_question("Soffri di acidità di stomaco?"))
     }
-    if askquestion("Hai effettuato un esame gastrointestinale (come RM/TAC)?"):
-        evidences["Ciste"] = askquestion("L'esame ha rilevato la presenza di una ciste nella zona?")
+    if ask_question("Hai effettuato un esame gastrointestinale (come RM/TAC)?"):
+        evidences["Ciste"] = ask_question("L'esame ha rilevato la presenza di una ciste nella zona?")
     bayes_network = DiagnosticsBN()
     if mode == "learn": bayes_network.learn_from_dataset(load_dataset(dataset), method)
     result = get_result(bayes_network.inference(evidences))

@@ -1,6 +1,7 @@
-from diagnostics_expert_system import runex, askquestion
+from diagnostics_expert_system import runex
 from diagnostics_bayes_network import runbn, testrun
 from dataset_gen import gen_data, load_dataset
+from text_interface import ask_question
 
 path = "data/dataset.csv"
 
@@ -8,10 +9,10 @@ def expert_system():
     runex()
 
 def bayes_network():
-    if askquestion("Vuoi usare l'apprendimento parametrizzato?"):
-        if askquestion("Vuoi usare l'estimatore di massima verosomiglianza?"):
+    if ask_question("Vuoi usare l'apprendimento parametrizzato?"):
+        if ask_question("Vuoi usare l'estimatore di massima verosomiglianza?"):
             runbn("learn", "ml", path)
-        elif askquestion("Vuoi usare l'estimatore di bayes?"):
+        elif ask_question("Vuoi usare l'estimatore di bayes?"):
             runbn("learn", "bayes", path)
         else: print("Non esistono altri estiamatori disponibili nel programma, uscita dalla procedura...")
     else:
