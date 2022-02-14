@@ -6,15 +6,20 @@ from text_interface import ask_question, user_menu, wait_user
 path = "data/dataset.csv"
 
 def expert_system():
+    print("Benvenuto nel sistema diagnostico con modello a sistema esperto")
     runex()
 
 def bayes_network():
-    if ask_question("Vuoi usare l'apprendimento parametrizzato?"):
-        if ask_question("Vuoi usare l'estimatore di massima verosomiglianza?"):
-            runbn("learn", "ml", path)
-        elif ask_question("Vuoi usare l'estimatore di bayes?"):
-            runbn("learn", "bayes", path)
-        else: print("Non esistono altri estiamatori disponibili nel programma, uscita dalla procedura...")
+    print("Benvenuto nel sistema diagnostico con modello a rete bayesiana")
+    if ask_question("Vuoi che il modello apprenda i parametri dal dataset?"):
+        title = "Che tipo di estimatore vuoi utilizzare?"
+        options = [
+            "Stimatore di massima verosomiglianza",
+            "Stimatore di bayes"
+        ]
+        response = user_menu(title, options)
+        if response == 1: runbn("learn", "ml", path)
+        elif response == 2: runbn("learn", "bayes", path)
     else:
         print("Uso del modello preimpostato per la DAG e le probabilità condizionate dei nodi")
         runbn("normal")
