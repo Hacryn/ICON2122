@@ -1,7 +1,6 @@
-import pandas
-import numpy
+import pandas, numpy, os
 
-def gen_data(size: int):
+def generate(size: int):
     columns = [ "Perdita di peso", "Diarrea", "Nausea", "Vomito", "Rigonfiamento", "Acidità di stomaco", "Dolore addominale", "Ciste", "Ulcera", "Malattia" ]
     dataset = pandas.DataFrame(columns=columns, dtype=int)
 
@@ -73,3 +72,36 @@ def random_binary_bin(llchance: int, lhchance: int, hlchance: int, hhchance: int
 
 
 def random_int() -> int: return numpy.random.randint(0, 1000)
+
+class Dataset():
+
+    training: pandas.DataFrame = None
+    test: pandas.DataFrame = None
+
+    def __init__(self, training: str, test: str):
+        self.training_path = training
+        self.test_path = test
+
+    def generate_dataset(self, size: int):
+        self.generate_training(size)
+        self.generate_test(size)
+
+    def generate_training(self, size: int):
+        self.training = generate(size)
+
+    def generate_test(self, size: int):
+        self.test = generate(size)
+
+    def save_to_files(self):
+        self.training.to_csv(self.training_path)
+        self.test.to_csv(self.test_path)
+
+    def load_from_files(self):
+        if os.path.exists(self.training_path):
+            self.training = pandas.read_csv(self.training_path)
+        else:
+            print("There is no training set in " + self.training_path)
+        if os.path.exists(self.test_path):
+            self.test = pandas.read_csv(self.test_path)
+        else:
+            print("There is no test set in " + self.test_path)
