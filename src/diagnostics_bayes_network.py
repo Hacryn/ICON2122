@@ -1,12 +1,16 @@
-import bnlearn
-import pandas
-from pgmpy.factors.discrete import TabularCPD
-from dataset_gen import load_dataset
+import bnlearn, pandas
+from dataset import Dataset
 from text_interface import ask_question
+from pgmpy.factors.discrete import TabularCPD
 
 DEBUG = False
 
-def runbn(mode: str = "normal", method: str = "ml",dataset = "data/dataset.csv"):
+
+def runbn(dataset: Dataset, mode: str = "normal", method: str = "ml"):
+    if dataset.training is None and  method == "learn":
+        print("Dataset di training vuoto, carica un dataset")
+        return
+
     evidences = {
         'Nausea': int(ask_question("Hai la nausea?")),
         'Vomito': int(ask_question("Soffri di vomito?")),
@@ -19,21 +23,64 @@ def runbn(mode: str = "normal", method: str = "ml",dataset = "data/dataset.csv")
     if ask_question("Hai effettuato un esame gastrointestinale (come RM/TAC)?"):
         evidences["Ciste"] = ask_question("L'esame ha rilevato la presenza di una ciste nella zona?")
     bayes_network = DiagnosticsBN()
-    if mode == "learn": bayes_network.learn_from_dataset(load_dataset(dataset), method)
+    if mode == "learn": bayes_network.learn_from_dataset(dataset.training, method)
     result = get_result(bayes_network.inference(evidences))
     probability = (result["p"])[1] * 100
     print("La probabilità di avere la malattia è %.2f" % probability)
     if probability >= 50: print("Ti conviene contattare il tuo medico")
 
-def testrun():
-    bn = DiagnosticsBN()
-    rs = bn.test()
-    df = bnlearn.bnlearn.query2df(rs)
-    pm = df['p']
-    print("La probabilità di avere la malattia è %.2f" % (pm[1] * 100))
+
+def testbn(dataset: Dataset, method: str = 'ml'):
+    if dataset.training is None:
+        print("Dataset di training vuoto, carica un dataset")
+        return
+    if dataset.test is None:
+        print("Dataset di test vuoto, carica un dataset")
+        return
+
+    bayes_network = DiagnosticsBN()
+    bayes_network.learn_from_dataset(dataset.training, method)
+
+    tp: int = 0
+    tn: int = 0
+    fp: int = 0
+    fn: int = 0
+    for i in range(len(dataset.test)):
+        evidences = {
+            'Nausea': dataset.test.loc[i, 'Nausea'],
+            'Vomito': dataset.test.loc[i, 'Vomito'],
+            'Perdita di peso': dataset.test.loc[i, 'Perdita di peso'],
+            'Diarrea': dataset.test.loc[i, 'Diarrea'],
+            'Dolore addominale': dataset.test.loc[i, 'Dolore addominale'],
+            'Rigonfiamento': dataset.test.loc[i, 'Rigonfiamento'],
+            'Acidità di stomaco': dataset.test.loc[i, 'Acidità di stomaco']
+        }
+        probability = (get_result(bayes_network.inference(evidences))["p"])[1] * 100
+        if probability >= 50 and dataset.test.loc[i, 'Malattia'] == 1: tp = tp + 1
+        if probability >= 50 and dataset.test.loc[i, 'Malattia'] == 0: fp = fp + 1
+        if probability < 50 and dataset.test.loc[i, 'Malattia'] == 1: fn = fn + 1
+        if probability < 50 and dataset.test.loc[i, 'Malattia'] == 0: tn = tn + 1
+
+    accuracy = safe_division(tp + tn, tp + tn + fp + fn)
+    precision = safe_division(tp, tp + fp)
+    recall = safe_division(tp, tp + fn)
+    f1 = safe_division(2 * precision * recall, precision + recall)
+
+    print("TP %d TN %d FP %d FN %d" % (tp, tn, fp, fn))
+
+    print("Accuratezza: %.4f" % accuracy)
+    print("Precisione: %.4f" % precision)
+    print("Richiamo: %.4f" % recall)
+    print("Punteggio F1: %.4f" % f1)
+
+
+def safe_division(n, d):
+    return n / d if d else 0
+
 
 def get_result(query) -> pandas.DataFrame:
     return bnlearn.bnlearn.query2df(query)
+
 
 class DiagnosticsBN:
 
@@ -125,7 +172,7 @@ class DiagnosticsBN:
         ], verbose=0)
 
     def learn_from_dataset(self, dataset, method):
-        self.DAG = bnlearn.make_DAG(self.Edges)
+        self.DAG = bnlearn.make_DAG(self.Edges, verbose=0)
         self.DAG = bnlearn.parameter_learning.fit(self.DAG, dataset,
                                                   methodtype=method,
                                                   verbose=0)
