@@ -64,12 +64,14 @@ def testbn(dataset: Dataset, method: str = 'ml'):
     accuracy = safe_division(tp + tn, tp + tn + fp + fn)
     precision = safe_division(tp, tp + fp)
     recall = safe_division(tp, tp + fn)
+    f1 = safe_division(2 * precision * recall, precision + recall)
 
-    if DEBUG: print("TP %d TN %d FP %d FN %d" % (tp, tn, fp, fn))
+    print("TP %d TN %d FP %d FN %d" % (tp, tn, fp, fn))
 
-    print("Accuracy: %.4f" % accuracy)
-    print("Precision: %.4f" % precision)
-    print("Recall: %.4f" % recall)
+    print("Accuratezza: %.4f" % accuracy)
+    print("Precisione: %.4f" % precision)
+    print("Richiamo: %.4f" % recall)
+    print("Punteggio F1: %.4f" % f1)
 
 
 def safe_division(n, d):
