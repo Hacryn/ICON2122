@@ -12,22 +12,22 @@ def runbn(dataset: Dataset, mode: str = "normal", method: str = "ml"):
         return
 
     evidences = {
-        'Nausea': int(ask_question("Hai la nausea?")),
-        'Vomito': int(ask_question("Soffri di vomito?")),
-        'Perdita di peso': int(ask_question("Hai subito una perdita di peso inaspettata?")),
-        'Diarrea': int(ask_question("Soffri di diarrea?")),
-        'Dolore addominale': int(ask_question("Soffri di dolore addominale?")),
-        'Rigonfiamento': int(ask_question("Hai un rigonfiamento nella zona addominale?")),
-        'Acidità di stomaco': int(ask_question("Soffri di acidità di stomaco?"))
+        'Nausea': int(ask_question("Avverti un senso di nausea?")),
+        'Vomito': int(ask_question("Hai avuto attacchi di vomito ultimamente?")),
+        'Perdita di peso': int(ask_question("Hai subito una perdita di peso inaspettata ultimamente?")),
+        'Diarrea': int(ask_question("Hai avuto attachi di diarrea nell'ultimo periodo?")),
+        'Dolore addominale': int(ask_question("Avverti dolore nella zona addominale?")),
+        'Rigonfiamento': int(ask_question("Noti dei rigonfiamenti nella zona addominale?")),
+        'Acidità di stomaco': int(ask_question("Stai soffrendo di acidità di stomaco?"))
     }
     if ask_question("Hai effettuato un esame gastrointestinale (come RM/TAC)?"):
-        evidences["Ciste"] = ask_question("L'esame ha rilevato la presenza di una ciste nella zona?")
+        evidences["Ciste"] = ask_question("L'esame ha rilevato la presenza di una cisti nella zona?")
     bayes_network = DiagnosticsBN()
     if mode == "learn": bayes_network.learn_from_dataset(dataset.training, method)
     result = get_result(bayes_network.inference(evidences))
     probability = (result["p"])[1] * 100
     print("La probabilità di avere la malattia è %.2f" % probability)
-    if probability >= 50: print("Ti conviene contattare il tuo medico")
+    if probability >= 50: print("È consigliabile recarsi da un medico da un medico per ulteriori accertamenti")
 
 
 def testbn(dataset: Dataset, method: str = 'ml'):
